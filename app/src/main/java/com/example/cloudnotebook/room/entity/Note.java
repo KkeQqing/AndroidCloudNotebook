@@ -3,35 +3,36 @@ package com.example.cloudnotebook.room.entity;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "note")     //Room 数据库的注解. 把这个类变成一张数据库表，表名叫 note
+@Entity(tableName = "note")     // Room数据库注解：将该类映射为名为note的数据表
 public class Note {
     @PrimaryKey(autoGenerate = true)
-    private int localId;    //
-    private String serverId;    //
-    private String userId;  //
-    private String title;   //
-    private String content; //
-    private String category;    //
-    private long createTime;    //
-    private long updateTime;    //
-    private boolean isSync; //
-    private boolean isDeleted;  //
+    private int localId;    // 本地数据库主键ID，自增长，仅本地有效
+    private String serverId;    // 云端Bmob服务器返回的笔记唯一ID
+    private String userId;  // 所属用户ID，用于区分不同用户的笔记
+    private String title;   // 笔记标题
+    private String content; // 笔记内容
+    private String category;    // 笔记分类（如：工作、生活、学习等）
+    private long createTime;    // 笔记创建时间（毫秒时间戳）
+    private long updateTime;    // 笔记最后修改时间（毫秒时间戳）
+    private boolean isSync; // 同步状态：true=已同步到云端，false=未同步
+    private boolean isDeleted;  // 逻辑删除标记：true=已删除，false=未删除
 
     public Note() {}
 
+    // 新增笔记时使用的构造方法（自动填充时间、同步、删除状态）
     public Note(String title,String content,String category,String userId){
         this.title= title;
         this.content = content;
         this.category = category;
         this.userId = userId;
 
-        this.createTime = System.currentTimeMillis(); //
-        this.updateTime = this.createTime;
-        this.isSync = false;
-        this.isDeleted = false;
+        this.createTime = System.currentTimeMillis(); // 获取当前系统时间作为创建时间
+        this.updateTime = this.createTime;            // 刚创建时，修改时间 = 创建时间
+        this.isSync = false;                          // 新笔记默认未同步到云端
+        this.isDeleted = false;                       // 新笔记默认未删除
     }
 
-    // 全参构造
+    // 全参构造（用于查询、数据转换等完整赋值场景）
     public Note(int localId, String serverId, String userId, String title, String content,
                 String category, long createTime, long updateTime, boolean isSync, boolean isDeleted) {
         this.localId = localId;
