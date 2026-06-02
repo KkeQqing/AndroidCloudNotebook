@@ -1,4 +1,4 @@
 package com.example.cloudnotebook.network;
 
-public class BmobManager {
+public class BmobManager extends Application{
 }

@@ -1,4 +1,4 @@
 package com.example.cloudnotebook.ui.login;
 
-public class LoginActivity {
+public class LoginActivity extends Application{
 }
