@@ -33,6 +33,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+//    开启视图绑定  替代 findViewById
     buildFeatures {
         viewBinding = true
     }
