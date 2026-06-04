@@ -56,7 +56,7 @@ dependencies {
     implementation("androidx.room:room-runtime:2.5.2")
     annotationProcessor("androidx.room:room-compiler:2.5.2")
     implementation("androidx.work:work-runtime:2.8.1")
-    implementation("io.github.bmob:android-sdk:3.8.1")
+    implementation("io.github.bmob:android-sdk:3.9.3")
     implementation("io.reactivex.rxjava3:rxjava:3.1.6")
     implementation("io.reactivex.rxjava3:rxandroid:3.0.0")
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
