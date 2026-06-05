@@ -224,7 +224,7 @@ public class NoteRepository {
      * 作用：一次性把所有 isSync = false 的笔记全部上传到 Bmob
      * @param callback 同步完成的回调（通知页面同步结束）
      */
-    public void syncAllUnsyncNotes(OnCloudCallback callback) {
+    public void syncAllUnsyncedNotes(OnCloudCallback callback) {
         // 1. 在子线程中执行（数据库查询 + 循环上传，都是耗时操作）
         executor.execute(() -> {
             // 2. 查询本地数据库：获取【当前用户所有未同步】的笔记（isSync = false）
