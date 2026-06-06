@@ -146,4 +146,12 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
             checkBox = itemView.findViewById(R.id.checkbox);
         }
     }
+
+    /**
+     * 获取当前选中的所有笔记ID列表
+     * @return 选中的笔记ID集合
+     */
+    public List<Integer> getSelectedIds() {
+        return selectedIds;
+    }
 }
