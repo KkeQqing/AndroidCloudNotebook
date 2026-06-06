@@ -61,4 +61,5 @@ dependencies {
     implementation("io.reactivex.rxjava3:rxandroid:3.0.0")
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.cardview:cardview:1.0.0")
 }
