@@ -42,8 +42,10 @@ public class NoteViewModel extends AndroidViewModel {
     }
 
     // 插入笔记到本地
-    public void insert(Note note) {
-        repository.insertLocal(note, null);
+    public void insert(Note note, Runnable afterInsert) {
+        repository.insertLocal(note, () -> {
+            if (afterInsert != null) afterInsert.run();
+        });
     }
 
     // 更新本地笔记

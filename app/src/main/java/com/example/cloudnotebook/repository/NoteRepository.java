@@ -87,7 +87,8 @@ public class NoteRepository {
             note.setUserId(userId);
 
             // 调用 Room 的 DAO 执行插入操作
-            noteDao.insert(note);
+            long newLocalId = noteDao.insertAndReturnId(note);
+            note.setLocalId((int) newLocalId); // 回填 localId
 
             // 如果页面传了回调，通知页面：插入成功
             if(callback != null) callback.onSuccess();
@@ -99,23 +100,11 @@ public class NoteRepository {
      * 作用：更新本地笔记，并且标记为“未同步”，下次联网再上传
      * @param callback 操作完成回调
      */
-    public void updateLocal(Note originalNote, OnLocalOperationCallback callback){
+    public void updateLocal(Note note, OnLocalOperationCallback callback){
         executor.execute(()->{
-            // ---------------- 关键修复：克隆新对象，不修改外部对象 ----------------
-            Note note = new Note();
-            note.setLocalId(originalNote.getLocalId());
-            note.setServerId(originalNote.getServerId());
-            note.setTitle(originalNote.getTitle());
-            note.setContent(originalNote.getContent());
-            note.setCategory(originalNote.getCategory());
-            note.setUserId(originalNote.getUserId());
-            note.setCreateTime(originalNote.getCreateTime());
-            note.setDeleted(originalNote.isDeleted());
-            // -------------------------------------------------------------------
-
+            // 不克隆，直接更新，保证 serverId 不丢失
             note.setUpdateTime(System.currentTimeMillis());
-            note.setSync(false);
-
+            note.setSync(false);  // 标记需要同步
             noteDao.update(note);
             if(callback != null) callback.onSuccess();
         });
@@ -148,54 +137,37 @@ public class NoteRepository {
      * @param callback 云端操作回调（成功/失败）
      */
     public void uploadNote(Note note, OnCloudCallback callback) {
-        // 1. 把本地的 Note 对象 → 转换成 Bmob 能识别的云端对象
-        cn.bmob.v3.BmobObject bmobNote = convertToBmob(note);
+        BmobObject bmobNote = convertToBmob(note);
 
-        // 2. 判断：本地笔记是否【从未同步过云端】
-        // serverId 为空 → 代表云端还没有这条数据 → 执行新增
         if (note.getServerId() == null || note.getServerId().isEmpty()) {
-
-            // 云端新增数据
             bmobNote.save(new SaveListener<String>() {
                 @Override
                 public void done(String objectId, BmobException e) {
                     if (e == null) {
-                        // 云端新增成功！
-                        // 把 Bmob 返回的 唯一ID(objectId) 保存到本地 note 的 serverId 字段
-                        note.setServerId(objectId);
-
-                        // 标记本地笔记：已同步云端
-                        note.setSync(true);
-
-                        // 把更新后的 serverId 和 sync 状态 保存回本地Room
-                        executor.execute(() -> noteDao.update(note));
-
-                        // 通知外部：上传成功
+                        // 关键修复：必须把 serverId 存入数据库
+                        executor.execute(() -> {
+                            note.setServerId(objectId);
+                            note.setSync(true);
+                            noteDao.update(note);  // 持久化到Room
+                        });
                         if (callback != null) callback.onSuccess();
                     } else {
-                        // 上传失败 → 通知外部失败原因
                         if (callback != null) callback.onError(e.getMessage());
                     }
                 }
             });
-
         } else {
-            // 3. 有 serverId → 代表云端已有这条数据 → 执行【更新】
+            // 关键修复：用 serverId 更新，不会新增！
             bmobNote.update(note.getServerId(), new UpdateListener() {
                 @Override
                 public void done(BmobException e) {
                     if (e == null) {
-                        // 云端更新成功
-                        // 标记本地笔记：已同步
-                        note.setSync(true);
-
-                        // 保存同步状态到Room
-                        executor.execute(() -> noteDao.update(note));
-
-                        // 通知外部成功
+                        executor.execute(() -> {
+                            note.setSync(true);
+                            noteDao.update(note);  // 保存同步状态
+                        });
                         if (callback != null) callback.onSuccess();
                     } else {
-                        // 更新失败
                         if (callback != null) callback.onError(e.getMessage());
                     }
                 }

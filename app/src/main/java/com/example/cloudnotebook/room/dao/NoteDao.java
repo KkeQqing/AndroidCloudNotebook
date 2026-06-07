@@ -107,4 +107,6 @@ public interface NoteDao {
             "WHERE localId = :localId")
     Note getNoteByLocalId(int localId);
 
+    @Insert
+    long insertAndReturnId(Note note);
 }

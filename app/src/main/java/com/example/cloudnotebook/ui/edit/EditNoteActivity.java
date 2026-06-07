@@ -69,18 +69,18 @@ public class EditNoteActivity extends BaseActivity {
             Note note = AppDatabase.getInstance(this).noteDao().getNoteByLocalId(noteId);
             runOnUiThread(() -> {
                 if (note != null) {
-                    currentNote = note;
+                    currentNote = note; // 这里必须是完整的笔记（包含 localId + serverId）
+
                     // 回显数据
                     binding.etTitle.setText(note.getTitle());
                     binding.etContent.setText(note.getContent());
                     setCategorySelection(note.getCategory());
 
-                    // 初始化「上次保存值」，用于对比内容是否变化
+                    // 初始化记录
                     lastTitle = note.getTitle();
                     lastContent = note.getContent();
                     lastCategory = note.getCategory();
                 }
-                // 数据加载完成后再启动自动保存
                 startAutoSaveTask();
             });
         });
@@ -102,7 +102,7 @@ public class EditNoteActivity extends BaseActivity {
             }
         };
         // 延迟3秒执行第一次自动保存
-        handler.postDelayed(autoSaveRunnable, 3000);
+        handler.postDelayed(autoSaveRunnable, 1500);
     }
 
     /**
@@ -136,7 +136,9 @@ public class EditNoteActivity extends BaseActivity {
         if (isNewNote) {
             // 新建笔记分支
             currentNote = new Note(title, content, category, realUserId);
-            viewModel.insert(currentNote);
+            viewModel.insert(currentNote, () -> {
+                // 此时 currentNote.localId 已经被 repository 回填
+            });
             isNewNote = false;
         } else {
             if (currentNote == null) return;
