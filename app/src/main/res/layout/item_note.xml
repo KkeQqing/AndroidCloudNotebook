@@ -3,17 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_marginHorizontal="8dp"
+    android:layout_marginHorizontal="12dp"
     android:layout_marginVertical="6dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="3dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#fff">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="14dp">
+        android:padding="16dp">
 
-        <!-- 多选复选框，默认隐藏，多选模式展示 -->
         <CheckBox
             android:id="@+id/checkbox"
             android:layout_width="wrap_content"
@@ -22,59 +22,57 @@
             android:layout_centerVertical="true"
             android:visibility="gone"/>
 
-        <!-- 标题 -->
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/checkbox"
+            android:layout_toRightOf="@id/checkbox"
             android:textSize="17sp"
             android:textStyle="bold"
             android:maxLines="1"
             android:ellipsize="end"
             android:textColor="#212121"/>
 
-        <!-- 内容摘要 -->
         <TextView
             android:id="@+id/tv_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_title"
-            android:layout_toEndOf="@id/checkbox"
-            android:layout_marginTop="4dp"
-            android:textSize="13sp"
+            android:layout_toRightOf="@id/checkbox"
+            android:layout_marginTop="6dp"
+            android:textSize="14sp"
             android:maxLines="2"
             android:ellipsize="end"
             android:textColor="#757575"/>
 
-        <!-- 分类标签 -->
         <TextView
             android:id="@+id/tv_category"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_content"
-            android:layout_toEndOf="@id/checkbox"
-            android:layout_marginTop="8dp"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="2dp"
+            android:layout_toRightOf="@id/checkbox"
+            android:layout_marginTop="10dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
             android:textSize="11sp"
             android:textColor="#2979FF"
-            android:background="#E8F0FE"/>
+            android:background="#E8F0FE"
+            android:gravity="center"
+            android:layout_marginBottom="4dp"/>
 
-        <!-- ====================== -->
-        <!-- 【我给你加的分享按钮】 -->
-        <!-- 放在右下角，美观不突兀 -->
-        <!-- ====================== -->
         <TextView
             android:id="@+id/btn_share"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:layout_below="@id/tv_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:text="分享"
             android:textSize="11sp"
-            android:textColor="#4CAF50"/>
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:textColor="#4CAF50"
+            android:background="#E6F4EA"/>
 
     </RelativeLayout>
 
