@@ -97,21 +97,26 @@ public class NoteRepository {
     /**
      * 【本地更新笔记】
      * 作用：更新本地笔记，并且标记为“未同步”，下次联网再上传
-     * @param note 要更新的笔记
      * @param callback 操作完成回调
      */
-    public void updateLocal(Note note, OnLocalOperationCallback callback){
+    public void updateLocal(Note originalNote, OnLocalOperationCallback callback){
         executor.execute(()->{
-            // 更新时自动刷新【最后修改时间】为当前系统时间
-            note.setUpdateTime(System.currentTimeMillis());
+            // ---------------- 关键修复：克隆新对象，不修改外部对象 ----------------
+            Note note = new Note();
+            note.setLocalId(originalNote.getLocalId());
+            note.setServerId(originalNote.getServerId());
+            note.setTitle(originalNote.getTitle());
+            note.setContent(originalNote.getContent());
+            note.setCategory(originalNote.getCategory());
+            note.setUserId(originalNote.getUserId());
+            note.setCreateTime(originalNote.getCreateTime());
+            note.setDeleted(originalNote.isDeleted());
+            // -------------------------------------------------------------------
 
-            // 只要修改了笔记 → 立刻标记为【未同步】，确保下次会上传云端
+            note.setUpdateTime(System.currentTimeMillis());
             note.setSync(false);
 
-            // 执行本地更新
             noteDao.update(note);
-
-            // 通知页面更新成功
             if(callback != null) callback.onSuccess();
         });
     }

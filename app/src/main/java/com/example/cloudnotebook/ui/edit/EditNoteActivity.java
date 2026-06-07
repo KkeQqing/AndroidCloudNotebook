@@ -139,10 +139,11 @@ public class EditNoteActivity extends BaseActivity {
             viewModel.insert(currentNote);
             isNewNote = false;
         } else {
-            // 编辑笔记分支：只走update，绝对不走insert
             if (currentNote == null) return;
+
+            // 强制重新赋值，绝对使用界面最新文字（防被清空）
             currentNote.setTitle(title);
-            currentNote.setContent(content);
+            currentNote.setContent(content);  // 强保证正文不为空
             currentNote.setCategory(category);
             viewModel.update(currentNote);
         }
