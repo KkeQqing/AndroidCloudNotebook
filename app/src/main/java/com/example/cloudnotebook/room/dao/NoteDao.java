@@ -11,30 +11,31 @@ import com.example.cloudnotebook.room.entity.Note;
 import java.util.List;
 
 /**
- * 笔记表的 DAO (Data Access Object)
- * 作用：定义所有对 笔记(note) 表的 增、删、改、查 操作
+ * 笔记 DAO 层（Data Access Object）
+ * 作用：提供对本地 Room 数据库 note 表的所有操作方法
+ * 包括：增、删、改、查、搜索、分类、同步状态管理
  */
 @Dao
 public interface NoteDao {
 
     /**
-     * 插入一条新笔记
-     * @param note 要添加的笔记对象
+     * 插入单条笔记
+     * @param note 要保存的笔记对象
      */
     @Insert
     void insert(Note note);
 
     /**
-     * 更新一条已有的笔记
-     * @param note 要修改的笔记对象
+     * 更新单条笔记
+     * 根据主键（localId）自动匹配更新
      */
     @Update
     void update(Note note);
 
     /**
-     * 查询【当前用户】的【所有未删除】笔记
-     * 按【更新时间 最新→最旧】排序
-     * LiveData：数据变化时自动通知界面刷新
+     * 查询当前用户的所有未删除笔记
+     * 按更新时间 最新 → 最旧 排序
+     * 返回 LiveData，数据变化自动刷新页面
      */
     @Query("SELECT * FROM note " +
             "WHERE userId = :userId " +
@@ -43,8 +44,7 @@ public interface NoteDao {
     LiveData<List<Note>> getAllNotes(String userId);
 
     /**
-     * 根据【分类】查询笔记
-     * 查询指定用户、指定分类、未删除的笔记
+     * 根据分类查询笔记（工作、学习、生活等）
      */
     @Query("SELECT * FROM note " +
             "WHERE userId = :userId " +
@@ -54,8 +54,8 @@ public interface NoteDao {
     LiveData<List<Note>> getNotesByCategory(String userId, String category);
 
     /**
-     * 搜索笔记（模糊查询）
-     * 匹配：标题 或 内容 包含搜索关键词
+     * 搜索笔记（模糊匹配标题 + 内容）
+     * LIKE %关键词% 实现包含查询
      */
     @Query("SELECT * FROM note " +
             "WHERE userId = :userId " +
@@ -65,8 +65,8 @@ public interface NoteDao {
     LiveData<List<Note>> searchNotes(String userId, String query);
 
     /**
-     * 获取【未同步到服务器】的笔记
-     * 用于离线同步功能
+     * 获取未同步到云端的笔记
+     * 用于离线后一键云同步
      */
     @Query("SELECT * FROM note " +
             "WHERE isDeleted = 0 " +
@@ -75,38 +75,42 @@ public interface NoteDao {
     List<Note> getUnsyncedNotes(String userId);
 
     /**
-     * 更新笔记的【同步状态】
-     * 上传服务器成功后，标记为已同步
+     * 更新笔记的同步状态
+     * 上传云端成功后，将 isSync 设为 true
      */
     @Query("UPDATE note SET isSync = :isSync " +
             "WHERE localId = :localId")
     void updateSyncStatus(int localId, boolean isSync);
 
     /**
-     * 【批量软删除】笔记
-     * 不是真删除，只是标记 isDeleted = 1
-     * 同时更新修改时间
+     * 批量软删除笔记
+     * 不真正删除数据，只标记 isDeleted = 1
+     * 支持同时删除多条
      */
     @Query("UPDATE note SET isDeleted = 1, updateTime = :updateTime " +
             "WHERE localId IN (:ids)")
     void softDeleteNotes(long updateTime, int... ids);
 
     /**
-     * 根据【服务器ID】查询单条笔记
-     * 用于云端同步时匹配数据
+     * 根据云端 ID（serverId）查询本地笔记
+     * 用于云端同步时判断数据是否已存在
      */
     @Query("SELECT * FROM note " +
             "WHERE serverId = :serverId LIMIT 1")
     Note getNoteByServerId(String serverId);
 
     /**
-     * 根据【本地ID】查询单条笔记
-     * 用于编辑、查看单条笔记
+     * 根据本地主键 ID 查询单条笔记
+     * 用于编辑、查看详情
      */
     @Query("SELECT * FROM note " +
             "WHERE localId = :localId")
     Note getNoteByLocalId(int localId);
 
+    /**
+     * 插入笔记并返回自动生成的主键 ID
+     * 用于插入后立刻拿到 ID 进行后续操作
+     */
     @Insert
     long insertAndReturnId(Note note);
 }

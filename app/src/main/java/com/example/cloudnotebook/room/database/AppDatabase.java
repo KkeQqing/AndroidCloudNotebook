@@ -8,37 +8,38 @@ import com.example.cloudnotebook.room.dao.NoteDao;
 import com.example.cloudnotebook.room.entity.Note;
 
 /**
- * 数据库全局管理类
- * 作用：创建数据库、获取数据库单例、提供 DAO 访问数据
+ * Room 数据库全局管理类
+ * 作用：创建数据库实例、管理单例、提供 DAO 访问数据
+ * 特点：全局唯一实例，避免重复创建连接
  */
 @Database(
-        entities = {Note.class},   // 数据库包含的表：只有 Note 表
-        version = 1,               // 数据库版本号，修改表结构时需要 +1
-        exportSchema = false       // 不导出数据库架构文件（默认 false）
+        entities = {Note.class},       // 数据库包含的实体类（表）
+        version = 1,                   // 数据库版本（修改表结构时必须递增）
+        exportSchema = false           // 关闭数据库架构导出（避免编译警告）
 )
 public abstract class AppDatabase extends RoomDatabase {
 
-    // 单例：全局唯一的数据库实例
+    // 全局唯一的数据库单例实例
     private static AppDatabase instance;
 
     /**
-     * 抽象方法：Room 自动实现
-     * @return 返回 Note 表的 DAO，用于操作笔记数据
+     * 抽象方法：Room 自动生成实现类
+     * @return 提供操作 Note 表的 DAO
      */
     public abstract NoteDao noteDao();
 
     /**
-     * 获取数据库【单例实例】
-     * 全局只创建一次数据库，避免多次连接浪费资源
-     * synchronized：保证线程安全
+     * 获取数据库单例（全局唯一）
+     * synchronized 保证多线程安全
      */
-    public static synchronized AppDatabase getInstance(Context context){
-        // 如果还没有创建实例，就创建
-        if (instance == null){
+    public static synchronized AppDatabase getInstance(Context context) {
+        // 没有实例才创建，保证全局唯一
+        if (instance == null) {
+            // 构建数据库实例
             instance = Room.databaseBuilder(
-                            context.getApplicationContext(),  // 上下文
-                            AppDatabase.class,               // 数据库类
-                            "cloud_notepad_db")             // 数据库文件名
+                            context.getApplicationContext(),  // 使用全局上下文，防止内存泄漏
+                            AppDatabase.class,                // 当前数据库类
+                            "cloud_notepad_db")                // 数据库文件名
                     .build();
         }
         // 返回唯一实例
