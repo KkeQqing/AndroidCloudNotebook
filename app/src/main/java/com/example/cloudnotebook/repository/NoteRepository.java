@@ -191,6 +191,8 @@ public class NoteRepository {
         obj.setValue("createTime", note.getCreateTime());
         obj.setValue("updateTime", note.getUpdateTime());
         obj.setValue("isDeleted", note.isDeleted());
+        obj.setValue("localId", note.getLocalId());
+        obj.setValue("serverId", note.getServerId());
 
         // 返回转换好的云端对象
         return obj;
