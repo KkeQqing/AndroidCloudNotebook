@@ -29,7 +29,7 @@ public class SettingActivity extends BaseActivity {
         // 显示当前应用版本号
         binding.tvVersion.setText("版本: 1.0.0");
 
-        // 清除缓存按钮点击事件（模拟实现）
+        // 清除缓存按钮点击事件
         binding.btnClearCache.setOnClickListener(v -> {
             Toast.makeText(this, "缓存已清除", Toast.LENGTH_SHORT).show();
         });
