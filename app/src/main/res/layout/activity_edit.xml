@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
     android:padding="16dp"
+    app:cardBackgroundColor="#D0FFFFFF"
     tools:context=".ui.edit.EditNoteActivity">
 
     <androidx.cardview.widget.CardView
@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         app:cardCornerRadius="16dp"
         app:cardElevation="3dp"
-        app:cardBackgroundColor="@android:color/white"
+        app:cardBackgroundColor="#D0FFFFFF"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -30,6 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
                 android:text="返回"
+                android:textColor="@color/black"
                 android:textSize="14sp"
                 app:cornerRadius="20dp"
                 app:strokeWidth="1dp"
@@ -57,7 +58,7 @@
         android:layout_marginTop="16dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="2dp"
-        app:cardBackgroundColor="@android:color/white"
+        app:cardBackgroundColor="#D0FFFFFF"
         app:layout_constraintTop_toBottomOf="@id/card_top_bar">
 
         <EditText
@@ -78,7 +79,7 @@
         android:layout_marginTop="12dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="2dp"
-        app:cardBackgroundColor="@android:color/white"
+        app:cardBackgroundColor="#D0FFFFFF"
         app:layout_constraintTop_toBottomOf="@id/card_title">
 
         <RadioGroup
@@ -130,7 +131,7 @@
         android:layout_marginTop="12dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="2dp"
-        app:cardBackgroundColor="@android:color/white"
+        app:cardBackgroundColor="#D0FFFFFF"
         app:layout_constraintTop_toBottomOf="@id/card_category"
         app:layout_constraintBottom_toBottomOf="parent">
 

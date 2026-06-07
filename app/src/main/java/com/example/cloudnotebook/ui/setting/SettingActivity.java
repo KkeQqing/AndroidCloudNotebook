@@ -1,49 +1,83 @@
 package com.example.cloudnotebook.ui.setting;
 
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.example.cloudnotebook.R;
 import com.example.cloudnotebook.base.BaseActivity;
 import com.example.cloudnotebook.databinding.ActivitySettingBinding;
+import com.example.cloudnotebook.utils.BgImageHelper;
 import com.example.cloudnotebook.utils.SharedPrefsHelper;
 
 import cn.bmob.v3.BmobUser;
 
-/**
- * 设置页面
- * 功能：展示版本号、清除缓存、退出登录
- * 继承自 BaseActivity，使用 ViewBinding 绑定布局
- */
 public class SettingActivity extends BaseActivity {
-    // ViewBinding 对象，用于绑定 activity_setting.xml 布局中的所有控件
     private ActivitySettingBinding binding;
+    private static final int REQUEST_IMAGE = 1001;
+    private static final int PERMISSION_CODE = 1002;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 初始化 ViewBinding
         binding = ActivitySettingBinding.inflate(getLayoutInflater());
-        // 设置布局视图
         setContentView(binding.getRoot());
 
-        // 显示当前应用版本号
         binding.tvVersion.setText("版本: 1.0.0");
 
-        // 清除缓存按钮点击事件
         binding.btnClearCache.setOnClickListener(v -> {
             Toast.makeText(this, "缓存已清除", Toast.LENGTH_SHORT).show();
         });
 
-        // 退出登录按钮点击事件
         binding.btnLogout.setOnClickListener(v -> {
-            // 1. 清空本地 SharedPreferences 存储的用户信息
             new SharedPrefsHelper(this).clear();
-
-            // 2. Bmob后端云 退出登录
             BmobUser.logOut();
-
-            // 3. 跳转到登录页面，并关闭当前所有页面（使用基类封装方法）
             jumpActivityFinish(com.example.cloudnotebook.ui.login.LoginActivity.class);
         });
+
+        binding.btnChangeBg.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{android.Manifest.permission.READ_MEDIA_IMAGES}, PERMISSION_CODE);
+                    return;
+                }
+            }
+
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(intent, REQUEST_IMAGE);
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_IMAGE && resultCode == RESULT_OK && data != null) {
+            Uri imageUri = data.getData();
+            BgImageHelper.saveBackgroundImage(this, imageUri);
+            Toast.makeText(this, "背景设置成功！重启APP生效", Toast.LENGTH_SHORT).show();
+
+            // 重启MainActivity让背景生效
+            Intent intent = new Intent(this, com.example.cloudnotebook.MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                startActivityForResult(intent, REQUEST_IMAGE);
+            } else {
+                Toast.makeText(this, "请开启存储权限", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
