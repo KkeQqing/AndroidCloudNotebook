@@ -2,6 +2,7 @@ package com.example.cloudnotebook.ui.edit;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
@@ -17,112 +18,129 @@ import com.example.cloudnotebook.utils.SharedPrefsHelper;
 
 import java.util.concurrent.Executors;
 
-/**
- * 笔记编辑页面
- * 功能：新建笔记 / 编辑已有笔记
- * 包含：标题、内容、分类选择、自动保存、手动保存、同步上传
- */
 public class EditNoteActivity extends BaseActivity {
-    // ViewBinding 绑定布局，自动关联XML里的所有控件
     private ActivityEditBinding binding;
-
-    // 笔记ViewModel，负责数据库操作、同步逻辑
     private NoteViewModel viewModel;
-
-    // 当前正在编辑的笔记对象
     private Note currentNote;
-
-    // 笔记ID，-1表示新建，大于0表示编辑
     private int noteId = -1;
 
-    // 定时器相关，用于实现自动保存
-    private Handler handler = new Handler();
+    // 使用主线程Handler，配合严格生命周期管理
+    private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable autoSaveRunnable;
 
-    // 标记：true = 新建笔记，false = 编辑旧笔记
+    // 标记：编辑页固定为false，绝不允许新建分支
     private boolean isNewNote = true;
-
-    // SP工具类，获取当前登录的用户ID
     private SharedPrefsHelper prefsHelper;
 
-    /**
-     * 页面创建
-     */
+    // 记录上一次保存的内容，用来判断是否有修改（核心防无效保存）
+    private String lastTitle = "";
+    private String lastContent = "";
+    private String lastCategory = "";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 绑定布局
         binding = ActivityEditBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // 初始化ViewModel
         viewModel = new ViewModelProvider(this).get(NoteViewModel.class);
-
-        // 初始化SP工具类
         prefsHelper = new SharedPrefsHelper(this);
-
-        // 获取从首页传递过来的笔记ID（编辑模式才会有）
         noteId = getIntent().getIntExtra("note_id", -1);
 
-        // 如果ID != -1，说明是编辑模式，加载原有笔记数据
-        if (noteId != -1) {
-            isNewNote = false;
-
-            // 子线程查询数据库（Room不允许主线程操作）
-            Executors.newSingleThreadExecutor().execute(() -> {
-                Note note = AppDatabase.getInstance(this).noteDao().getNoteByLocalId(noteId);
-
-                // 切回主线程更新UI
-                runOnUiThread(() -> {
-                    if (note != null) {
-                        currentNote = note;
-                        // 给输入框赋值
-                        binding.etTitle.setText(note.getTitle());
-                        binding.etContent.setText(note.getContent());
-                        // 自动选中对应的分类
-                        setCategorySelection(note.getCategory());
-                    }
-                });
-            });
-        }
-
-        // 保存按钮点击事件
         binding.btnSave.setOnClickListener(v -> saveNoteAndExit());
-
-        // 自动保存：每3秒自动保存一次到本地
-        autoSaveRunnable = () -> {
-            saveLocal();
-            handler.postDelayed(autoSaveRunnable, 3000);
-        };
-        handler.postDelayed(autoSaveRunnable, 3000);
-
-        // 返回按钮，关闭当前页面
         binding.btnBack.setOnClickListener(v -> onBackPressed());
+
+        // ========== 区分新建 / 编辑 ==========
+        if (noteId != -1) {
+            // 编辑模式：强制锁定为旧笔记，禁止走insert
+            isNewNote = false;
+            loadOldNoteData();
+        } else {
+            // 新建模式
+            startAutoSaveTask();
+        }
     }
 
     /**
-     * 本地自动保存逻辑
-     * 作用：实时保存内容，防止丢失
+     * 加载已有笔记数据
+     */
+    private void loadOldNoteData() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            Note note = AppDatabase.getInstance(this).noteDao().getNoteByLocalId(noteId);
+            runOnUiThread(() -> {
+                if (note != null) {
+                    currentNote = note;
+                    // 回显数据
+                    binding.etTitle.setText(note.getTitle());
+                    binding.etContent.setText(note.getContent());
+                    setCategorySelection(note.getCategory());
+
+                    // 初始化「上次保存值」，用于对比内容是否变化
+                    lastTitle = note.getTitle();
+                    lastContent = note.getContent();
+                    lastCategory = note.getCategory();
+                }
+                // 数据加载完成后再启动自动保存
+                startAutoSaveTask();
+            });
+        });
+    }
+
+    /**
+     * 启动自动保存：启动前先清空旧任务，防止多任务叠加
+     */
+    private void startAutoSaveTask() {
+        // 先移除已有任务，避免多个定时器并发
+        handler.removeCallbacks(autoSaveRunnable);
+
+        autoSaveRunnable = new Runnable() {
+            @Override
+            public void run() {
+                saveLocal();
+                // 循环执行
+                handler.postDelayed(this, 3000);
+            }
+        };
+        // 延迟3秒执行第一次自动保存
+        handler.postDelayed(autoSaveRunnable, 3000);
+    }
+
+    /**
+     * 本地保存核心逻辑
+     * 增加：内容无变化 → 直接返回，不更新、不重置同步状态
      */
     private void saveLocal() {
-        // 获取输入框内容并去空格
         String title = binding.etTitle.getText().toString().trim();
         String content = binding.etContent.getText().toString().trim();
         String category = getSelectedCategory();
 
-        // 标题和内容都为空，不保存
-        if (title.isEmpty() && content.isEmpty()) return;
+        // 1. 标题+内容全空，不保存
+        if (title.isEmpty() && content.isEmpty()) {
+            return;
+        }
 
-        // 获取真实的用户ID
+        // 2. 内容和上一次完全一致 → 无修改，直接退出，不执行更新
+        if (title.equals(lastTitle)
+                && content.equals(lastContent)
+                && category.equals(lastCategory)) {
+            return;
+        }
+
+        // 3. 更新缓存的上次内容
+        lastTitle = title;
+        lastContent = content;
+        lastCategory = category;
+
         String realUserId = prefsHelper.getUserId();
 
         if (isNewNote) {
-            // 新建笔记：创建Note对象，插入数据库 —— 这里用真实ID
+            // 新建笔记分支
             currentNote = new Note(title, content, category, realUserId);
             viewModel.insert(currentNote);
             isNewNote = false;
         } else {
-            // 编辑笔记：更新已有内容
+            // 编辑笔记分支：只走update，绝对不走insert
+            if (currentNote == null) return;
             currentNote.setTitle(title);
             currentNote.setContent(content);
             currentNote.setCategory(category);
@@ -132,27 +150,21 @@ public class EditNoteActivity extends BaseActivity {
 
     /**
      * 手动保存并退出
-     * 停止自动保存 → 保存一次 → 同步 → 关闭页面
      */
     private void saveNoteAndExit() {
-        // 停止自动保存
+        // 第一步：停止自动保存
         handler.removeCallbacks(autoSaveRunnable);
-        // 保存一次
+        // 第二步：执行最后一次本地保存
         saveLocal();
 
-        // 上传云端并提示
+        // 第三步：仅上传一次（唯一一次云端同步）
         if (currentNote != null) {
             viewModel.uploadNote(currentNote);
             Toast.makeText(this, "保存并同步成功", Toast.LENGTH_SHORT).show();
         }
-
-        // 关闭页面
         finish();
     }
 
-    /**
-     * 获取当前选中的分类（工作/学习/生活/其他）
-     */
     private String getSelectedCategory() {
         int id = binding.radioGroup.getCheckedRadioButtonId();
         if (id == R.id.radio_work) return "工作";
@@ -161,10 +173,6 @@ public class EditNoteActivity extends BaseActivity {
         else return "其他";
     }
 
-    /**
-     * 根据笔记的分类，自动勾选对应的单选按钮
-     * 编辑笔记时回显分类用
-     */
     private void setCategorySelection(String category) {
         switch (category) {
             case "工作":
@@ -182,18 +190,19 @@ public class EditNoteActivity extends BaseActivity {
         }
     }
 
-    /**
-     * 页面销毁时
-     * 停止自动保存，避免内存泄漏
-     */
+    // 页面不可见时，停止定时任务（防后台跑任务）
+    @Override
+    protected void onPause() {
+        super.onPause();
+        handler.removeCallbacks(autoSaveRunnable);
+    }
+
+    // 页面销毁：彻底清空任务，【删除多余的上传逻辑】
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // 只停定时器，不再额外上传！！关键修复
         handler.removeCallbacks(autoSaveRunnable);
-
-        // 退出前最后同步一次
-        if (currentNote != null) {
-            viewModel.uploadNote(currentNote);
-        }
+        autoSaveRunnable = null;
     }
 }
