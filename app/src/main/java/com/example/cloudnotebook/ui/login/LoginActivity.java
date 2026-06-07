@@ -10,9 +10,6 @@ import com.example.cloudnotebook.base.BaseActivity;
 import com.example.cloudnotebook.databinding.ActivityLoginBinding;
 import com.example.cloudnotebook.viewmodel.LoginViewModel;
 
-/**
- * 登录页面：账号登录/账号注册、自动登录跳转首页
- */
 public class LoginActivity extends BaseActivity {
     private ActivityLoginBinding binding;
     private LoginViewModel viewModel;
@@ -20,19 +17,29 @@ public class LoginActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //视图绑定
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        //初始化ViewModel
         viewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
-        //自动登录判定
-        if (viewModel.isAutoLogin()) {
+        // ======================
+        // 修复 1：方法名统一
+        // ======================
+        if (viewModel.isAlreadyLogin()) {
             jumpActivityFinish(MainActivity.class);
             return;
         }
 
-        //登录点击
+        // 自动填充账号密码
+        String lastUser = viewModel.getLastUser();
+        String lastPwd = viewModel.getLastPwd();
+        if (!TextUtils.isEmpty(lastUser)) {
+            binding.etUsername.setText(lastUser);
+        }
+        if (!TextUtils.isEmpty(lastPwd)) {
+            binding.etPassword.setText(lastPwd);
+        }
+
+        // 登录
         binding.btnLogin.setOnClickListener(v -> {
             String[] userPwd = getUserAndPwd();
             String user = userPwd[0];
@@ -44,7 +51,7 @@ public class LoginActivity extends BaseActivity {
             viewModel.login(user, pwd);
         });
 
-        //注册点击
+        // 注册
         binding.tvRegister.setOnClickListener(v -> {
             String[] userPwd = getUserAndPwd();
             String user = userPwd[0];
@@ -56,22 +63,21 @@ public class LoginActivity extends BaseActivity {
             viewModel.register(user, pwd);
         });
 
-        //登录成功监听
+        // 登录成功
         viewModel.loginSuccess.observe(this, success -> {
             if (success) {
                 jumpActivityFinish(MainActivity.class);
             }
         });
 
-        //错误提示监听
-        viewModel.errorMessage.observe(this, msg ->
+        // ======================
+        // 修复 2：名字统一
+        // ======================
+        viewModel.errorMsg.observe(this, msg ->
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         );
     }
 
-    /**
-     * 抽取：获取账号密码，返回数组[账号,密码]
-     */
     private String[] getUserAndPwd() {
         String user = binding.etUsername.getText().toString().trim();
         String pwd = binding.etPassword.getText().toString().trim();
