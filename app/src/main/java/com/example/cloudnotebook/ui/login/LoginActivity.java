@@ -21,9 +21,7 @@ public class LoginActivity extends BaseActivity {
         setContentView(binding.getRoot());
         viewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
-        // ======================
-        // 修复 1：方法名统一
-        // ======================
+        // 已登录直接跳主页
         if (viewModel.isAlreadyLogin()) {
             jumpActivityFinish(MainActivity.class);
             return;
@@ -39,7 +37,7 @@ public class LoginActivity extends BaseActivity {
             binding.etPassword.setText(lastPwd);
         }
 
-        // 登录
+        // 登录按钮
         binding.btnLogin.setOnClickListener(v -> {
             String[] userPwd = getUserAndPwd();
             String user = userPwd[0];
@@ -51,28 +49,21 @@ public class LoginActivity extends BaseActivity {
             viewModel.login(user, pwd);
         });
 
-        // 注册
+        // ======================
+        // 【这里已修改】点击注册 → 跳转到注册页面
+        // ======================
         binding.tvRegister.setOnClickListener(v -> {
-            String[] userPwd = getUserAndPwd();
-            String user = userPwd[0];
-            String pwd = userPwd[1];
-            if (TextUtils.isEmpty(user) || TextUtils.isEmpty(pwd)) {
-                Toast.makeText(this, "请输入账号密码", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            viewModel.register(user, pwd);
+            jumpActivity(RegisterActivity.class);
         });
 
-        // 登录成功
+        // 登录成功监听
         viewModel.loginSuccess.observe(this, success -> {
             if (success) {
                 jumpActivityFinish(MainActivity.class);
             }
         });
 
-        // ======================
-        // 修复 2：名字统一
-        // ======================
+        // 错误提示监听
         viewModel.errorMsg.observe(this, msg ->
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         );

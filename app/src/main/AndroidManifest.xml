@@ -34,6 +34,9 @@
             </intent-filter>
         </activity>
 
+        <!-- 注册页面（新增在这里） -->
+        <activity android:name=".ui.login.RegisterActivity" />
+
         <!-- 编辑笔记页面 -->
         <activity android:name=".ui.edit.EditNoteActivity"/>
 
