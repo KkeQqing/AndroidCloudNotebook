@@ -119,6 +119,14 @@ public class HomeFragment extends Fragment {
             startActivity(new Intent(requireContext(), EditNoteActivity.class));
         });
 
+        // ======================
+        // 【新增】顶部云同步按钮
+        // ======================
+        binding.btnCloudSync.setOnClickListener(v -> {
+            viewModel.syncAllUnsyncedNotes();
+            Toast.makeText(requireContext(), "已开始后台同步所有笔记", Toast.LENGTH_SHORT).show();
+        });
+
         // 底部栏：删除选中笔记
         binding.btnDelete.setOnClickListener(v -> {
             List<Integer> selectedIds = adapter.getSelectedIds();
