@@ -64,7 +64,7 @@ public class HomeFragment extends Fragment {
         loadAllNotes();
 
         // ==========================
-        // ✅ 搜索功能（完全修复）
+        // 搜索功能
         // ==========================
         binding.searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
             @Override
@@ -85,14 +85,36 @@ public class HomeFragment extends Fragment {
                 startActivity(new Intent(requireContext(), EditNoteActivity.class))
         );
 
-        // 删除
+        // ==========================
+        // ✅ 删除按钮（强制前端隐藏）
+        // ==========================
         binding.btnDelete.setOnClickListener(v -> {
-            List<Integer> selected = adapter.getSelectedIds();
-            if (selected.isEmpty()) {
+            List<Integer> selectedIds = adapter.getSelectedIds();
+
+            if (selectedIds.isEmpty()) {
                 Toast.makeText(requireContext(), "请选择笔记", Toast.LENGTH_SHORT).show();
                 return;
             }
-            viewModel.softDelete(selected);
+
+            // ==============================================
+            // ✅ 核心：先从列表移除，界面立刻消失
+            // ==============================================
+            for (int delId : selectedIds) {
+                for (int i = 0; i < adapter.notes.size(); i++) {
+                    if (adapter.notes.get(i).getLocalId() == delId) {
+                        adapter.notes.remove(i);
+                        adapter.notifyItemRemoved(i);
+                        break;
+                    }
+                }
+            }
+
+            // 后台执行数据库删除
+            viewModel.softDelete(selectedIds);
+
+            // 显示/隐藏空布局
+            binding.emptyView.setVisibility(adapter.notes.isEmpty() ? View.VISIBLE : View.GONE);
+
             exitMultiMode();
         });
 
@@ -116,7 +138,7 @@ public class HomeFragment extends Fragment {
     }
 
     // ==========================
-    // ✅ 搜索方法（修复）
+    // 搜索方法
     // ==========================
     private void searchNotes(String keyword) {
         if (keyword == null || keyword.isEmpty()) {
@@ -131,7 +153,7 @@ public class HomeFragment extends Fragment {
     }
 
     // ==========================
-    // ✅ 加载全部笔记
+    // 加载全部笔记
     // ==========================
     private void loadAllNotes() {
         viewModel.getAllNotes().observe(getViewLifecycleOwner(), notes -> {

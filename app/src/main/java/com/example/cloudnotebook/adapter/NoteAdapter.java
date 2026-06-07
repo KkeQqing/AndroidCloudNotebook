@@ -24,7 +24,7 @@ import java.util.List;
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 
     // 笔记数据源：列表要展示的所有笔记
-    private List<Note> notes = new ArrayList<>();
+    public List<Note> notes = new ArrayList<>();
 
     // 是否开启【多选模式】（用于批量删除）
     private boolean isMultiSelectMode = false;
