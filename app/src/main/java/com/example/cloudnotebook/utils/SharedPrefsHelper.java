@@ -51,6 +51,17 @@ public class SharedPrefsHelper {
         return prefs.getString("password", "");
     }
 
+    // ======================
+    // 主题功能（新增）
+    // ======================
+    public void setTheme(int id) {
+        prefs.edit().putInt("app_theme", id).apply();
+    }
+
+    public int getTheme() {
+        return prefs.getInt("app_theme", 0);
+    }
+
     // 清空（退出登录时调用）
     public void clear() {
         prefs.edit().clear().apply();

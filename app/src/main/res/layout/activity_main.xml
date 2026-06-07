@@ -3,7 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    app:cardBackgroundColor="#D0FFFFFF"
     android:layout_height="match_parent">
 
     <!-- Fragment 容器：用来显示首页、分类页面 -->

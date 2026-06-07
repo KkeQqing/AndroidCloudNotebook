@@ -5,7 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:cardBackgroundColor="#D0FFFFFF"
     android:padding="16dp">
 
     <!-- 标题 -->
@@ -105,6 +104,33 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="更换背景图"
+            android:textSize="16sp"
+            android:textColor="#2979FF"
+            android:gravity="center_vertical"
+            android:paddingStart="18dp"
+            android:clickable="true"
+            android:focusable="true"/>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 主题切换 -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_theme"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="1dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/card_bg"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/btn_change_theme"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="切换主题"
             android:textSize="16sp"
             android:textColor="#2979FF"
             android:gravity="center_vertical"

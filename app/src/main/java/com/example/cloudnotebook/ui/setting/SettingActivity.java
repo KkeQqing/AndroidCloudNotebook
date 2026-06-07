@@ -7,6 +7,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+
 import com.example.cloudnotebook.R;
 import com.example.cloudnotebook.base.BaseActivity;
 import com.example.cloudnotebook.databinding.ActivitySettingBinding;
@@ -25,6 +27,15 @@ public class SettingActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         binding = ActivitySettingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // 设置卡片颜色
+        binding.cardClear.setCardBackgroundColor(themeCardColor);
+        binding.cardLogout.setCardBackgroundColor(themeCardColor);
+        binding.cardBg.setCardBackgroundColor(themeCardColor);
+        binding.cardTheme.setCardBackgroundColor(themeCardColor);
+
+        binding.btnChangeBg.setTextColor(themeMainColor);
+        binding.btnChangeTheme.setTextColor(themeMainColor);
 
         binding.tvVersion.setText("版本: 1.0.0");
 
@@ -50,6 +61,31 @@ public class SettingActivity extends BaseActivity {
             intent.setType("image/*");
             startActivityForResult(intent, REQUEST_IMAGE);
         });
+
+        // ======================
+        // 主题切换
+        // ======================
+        binding.btnChangeTheme.setOnClickListener(v -> {
+            String[] themes = {
+                    "默认白色",
+                    "清新蓝",
+                    "活力橙",
+                    "森林绿",
+                    "优雅紫"
+            };
+
+            new AlertDialog.Builder(this)
+                    .setTitle("选择主题")
+                    .setItems(themes, (dialog, which) -> {
+                        new SharedPrefsHelper(this).setTheme(which);
+                        Toast.makeText(this, "切换成功，重启生效", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(this, com.example.cloudnotebook.MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                    })
+                    .show();
+        });
     }
 
     @Override
@@ -60,7 +96,6 @@ public class SettingActivity extends BaseActivity {
             BgImageHelper.saveBackgroundImage(this, imageUri);
             Toast.makeText(this, "背景设置成功！重启APP生效", Toast.LENGTH_SHORT).show();
 
-            // 重启MainActivity让背景生效
             Intent intent = new Intent(this, com.example.cloudnotebook.MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);

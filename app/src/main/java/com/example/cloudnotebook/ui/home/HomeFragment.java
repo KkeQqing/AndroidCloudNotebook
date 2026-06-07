@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -13,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.cloudnotebook.adapter.NoteAdapter;
+import com.example.cloudnotebook.base.BaseActivity;
 import com.example.cloudnotebook.databinding.FragmentHomeBinding;
 import com.example.cloudnotebook.room.entity.Note;
 import com.example.cloudnotebook.ui.edit.EditNoteActivity;
@@ -21,7 +23,6 @@ import com.example.cloudnotebook.viewmodel.NoteViewModel;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
-
     private FragmentHomeBinding binding;
     private NoteViewModel viewModel;
     private NoteAdapter adapter;
@@ -36,8 +37,13 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         viewModel = new ViewModelProvider(this).get(NoteViewModel.class);
+
+        // 搜索卡片主题
+        if (getActivity() instanceof BaseActivity) {
+            BaseActivity base = (BaseActivity) getActivity();
+            binding.cardSearch.setCardBackgroundColor(base.themeCardColor);
+        }
 
         adapter = new NoteAdapter(new NoteAdapter.OnItemClickListener() {
             @Override
@@ -59,13 +65,8 @@ public class HomeFragment extends Fragment {
 
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerView.setAdapter(adapter);
-
-        // 首次加载所有笔记
         loadAllNotes();
 
-        // ==========================
-        // 搜索功能
-        // ==========================
         binding.searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -80,25 +81,17 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        // 悬浮添加
-        binding.fabAdd.setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), EditNoteActivity.class))
-        );
+        binding.fabAdd.setOnClickListener(v -> {
+            startActivity(new Intent(requireContext(), EditNoteActivity.class));
+        });
 
-        // ==========================
-        // ✅ 删除按钮（强制前端隐藏）
-        // ==========================
         binding.btnDelete.setOnClickListener(v -> {
             List<Integer> selectedIds = adapter.getSelectedIds();
-
             if (selectedIds.isEmpty()) {
                 Toast.makeText(requireContext(), "请选择笔记", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // ==============================================
-            // ✅ 核心：先从列表移除，界面立刻消失
-            // ==============================================
             for (int delId : selectedIds) {
                 for (int i = 0; i < adapter.notes.size(); i++) {
                     if (adapter.notes.get(i).getLocalId() == delId) {
@@ -109,16 +102,11 @@ public class HomeFragment extends Fragment {
                 }
             }
 
-            // 后台执行数据库删除
             viewModel.softDelete(selectedIds);
-
-            // 显示/隐藏空布局
             binding.emptyView.setVisibility(adapter.notes.isEmpty() ? View.VISIBLE : View.GONE);
-
             exitMultiMode();
         });
 
-        // 同步
         binding.btnSync.setOnClickListener(v -> {
             List<Integer> selected = adapter.getSelectedIds();
             if (selected.isEmpty()) {
@@ -130,31 +118,23 @@ public class HomeFragment extends Fragment {
             exitMultiMode();
         });
 
-        // 下拉刷新
         binding.swipeRefresh.setOnRefreshListener(() -> {
             viewModel.pullFromCloud();
             binding.swipeRefresh.setRefreshing(false);
         });
     }
 
-    // ==========================
-    // 搜索方法
-    // ==========================
     private void searchNotes(String keyword) {
-        if (keyword == null || keyword.isEmpty()) {
+        if (keyword.isEmpty()) {
             loadAllNotes();
             return;
         }
-
         viewModel.searchNotes(keyword).observe(getViewLifecycleOwner(), notes -> {
             adapter.setNotes(notes);
             binding.emptyView.setVisibility(notes.isEmpty() ? View.VISIBLE : View.GONE);
         });
     }
 
-    // ==========================
-    // 加载全部笔记
-    // ==========================
     private void loadAllNotes() {
         viewModel.getAllNotes().observe(getViewLifecycleOwner(), notes -> {
             adapter.setNotes(notes);

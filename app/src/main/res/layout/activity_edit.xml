@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    app:cardBackgroundColor="#D0FFFFFF"
     tools:context=".ui.edit.EditNoteActivity">
 
     <androidx.cardview.widget.CardView
@@ -125,7 +124,9 @@
         </RadioGroup>
     </androidx.cardview.widget.CardView>
 
+    <!-- 这里我给你补上 ID：card_content -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/card_content"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"

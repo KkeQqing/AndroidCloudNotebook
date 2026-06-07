@@ -10,14 +10,48 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.cloudnotebook.R;
 import com.example.cloudnotebook.utils.BgImageHelper;
+import com.example.cloudnotebook.utils.SharedPrefsHelper;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
+    public int themeCardColor;
+    public int themeMainColor;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        loadAppTheme();
         super.onCreate(savedInstanceState);
         applyAppBackground();
+    }
+
+    private void loadAppTheme() {
+        SharedPrefsHelper sp = new SharedPrefsHelper(this);
+        int theme = sp.getTheme();
+
+        switch (theme) {
+            case 1:
+                themeCardColor = getColor(R.color.theme_1_card);
+                themeMainColor = getColor(R.color.theme_1_main);
+                break;
+            case 2:
+                themeCardColor = getColor(R.color.theme_2_card);
+                themeMainColor = getColor(R.color.theme_2_main);
+                break;
+            case 3:
+                themeCardColor = getColor(R.color.theme_3_card);
+                themeMainColor = getColor(R.color.theme_3_main);
+                break;
+            case 4:
+                themeCardColor = getColor(R.color.theme_4_card);
+                themeMainColor = getColor(R.color.theme_4_main);
+                break;
+            default:
+                themeCardColor = getColor(R.color.theme_0_card);
+                themeMainColor = getColor(R.color.theme_0_main);
+                break;
+        }
     }
 
     private void applyAppBackground() {

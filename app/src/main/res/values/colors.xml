@@ -2,4 +2,24 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- 主题0：默认白（半透） -->
+    <color name="theme_0_card">#D0FFFFFF</color>
+    <color name="theme_0_main">#2979FF</color>
+
+    <!-- 主题1：清新蓝 -->
+    <color name="theme_1_card">#D0E0F7FF</color>
+    <color name="theme_1_main">#2979FF</color>
+
+    <!-- 主题2：活力橙 -->
+    <color name="theme_2_card">#D0FFF3E0</color>
+    <color name="theme_2_main">#FF9800</color>
+
+    <!-- 主题3：森林绿 -->
+    <color name="theme_3_card">#D0E8F5E9</color>
+    <color name="theme_3_main">#4CAF50</color>
+
+    <!-- 主题4：优雅紫 -->
+    <color name="theme_4_card">#D0F3E5F5</color>
+    <color name="theme_4_main">#9C27B0</color>
 </resources>
