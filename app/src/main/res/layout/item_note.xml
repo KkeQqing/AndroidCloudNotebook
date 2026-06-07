@@ -61,6 +61,21 @@
             android:textColor="#2979FF"
             android:background="#E8F0FE"/>
 
+        <!-- ====================== -->
+        <!-- 【我给你加的分享按钮】 -->
+        <!-- 放在右下角，美观不突兀 -->
+        <!-- ====================== -->
+        <TextView
+            android:id="@+id/btn_share"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@id/tv_content"
+            android:layout_marginTop="8dp"
+            android:text="分享"
+            android:textSize="11sp"
+            android:textColor="#4CAF50"/>
+
     </RelativeLayout>
 
 </androidx.cardview.widget.CardView>

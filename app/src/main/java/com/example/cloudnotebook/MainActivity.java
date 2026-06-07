@@ -1,14 +1,18 @@
 package com.example.cloudnotebook;
 
 import android.os.Bundle;
-
 import androidx.fragment.app.Fragment;
-
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 import com.example.cloudnotebook.base.BaseActivity;
 import com.example.cloudnotebook.databinding.ActivityMainBinding;
 import com.example.cloudnotebook.ui.category.CategoryFragment;
 import com.example.cloudnotebook.ui.home.HomeFragment;
 import com.example.cloudnotebook.ui.setting.SettingActivity;
+import com.example.cloudnotebook.worker.SyncWorker;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 主页面
@@ -27,6 +31,11 @@ public class MainActivity extends BaseActivity {
         // 1. 加载主页面布局
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // ======================
+        // 启动 后台定时同步（每15分钟）
+        // ======================
+        startSyncWorkManager();
 
         // 2. APP一打开，默认显示【首页】
         getSupportFragmentManager().beginTransaction()
@@ -60,5 +69,25 @@ public class MainActivity extends BaseActivity {
 
             return true; // 返回true，正常选中底部导航按钮
         });
+    }
+
+    // ======================
+    // WorkManager 后台同步
+    // ======================
+    private void startSyncWorkManager() {
+        // 同步条件：有网络时才同步
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        // 每 15 分钟同步一次（系统最小限制）
+        PeriodicWorkRequest syncRequest = new PeriodicWorkRequest.Builder(
+                SyncWorker.class,
+                15, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .build();
+
+        // 启动任务
+        WorkManager.getInstance(this).enqueue(syncRequest);
     }
 }
