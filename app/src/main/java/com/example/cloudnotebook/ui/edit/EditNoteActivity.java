@@ -113,9 +113,12 @@ public class EditNoteActivity extends BaseActivity {
         // 标题和内容都为空，不保存
         if (title.isEmpty() && content.isEmpty()) return;
 
+        // 获取真实的用户ID
+        String realUserId = prefsHelper.getUserId();
+
         if (isNewNote) {
-            // 新建笔记：创建Note对象，插入数据库
-            currentNote = new Note(title, content, category, "default_user_id");
+            // 新建笔记：创建Note对象，插入数据库 —— 这里用真实ID
+            currentNote = new Note(title, content, category, realUserId);
             viewModel.insert(currentNote);
             isNewNote = false;
         } else {
