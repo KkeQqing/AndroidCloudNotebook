@@ -112,6 +112,7 @@ public class Note {
     public void setCreateTime(long createTime) { this.createTime = createTime; }
 
     public long getUpdateTime() { return updateTime; }
+
     public void setUpdateTime(long updateTime) { this.updateTime = updateTime; }
 
     public boolean isSync() { return isSync; }
