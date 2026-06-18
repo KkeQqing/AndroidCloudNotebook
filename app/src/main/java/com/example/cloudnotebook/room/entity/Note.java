@@ -119,5 +119,6 @@ public class Note {
     public void setSync(boolean sync) { isSync = sync; }
 
     public boolean isDeleted() { return isDeleted; }
+
     public void setDeleted(boolean deleted) { isDeleted = deleted; }
 }
