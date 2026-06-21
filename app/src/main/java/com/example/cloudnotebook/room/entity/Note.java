@@ -116,6 +116,7 @@ public class Note {
     public void setUpdateTime(long updateTime) { this.updateTime = updateTime; }
 
     public boolean isSync() { return isSync; }
+
     public void setSync(boolean sync) { isSync = sync; }
 
     public boolean isDeleted() { return isDeleted; }
