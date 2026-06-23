@@ -25,5 +25,6 @@ public class BmobManager extends Application {
          * 规则：必须在所有Bmob数据操作代码执行前初始化，固定放在Application的onCreate中是最佳规范
          */
         Bmob.initialize(this, "6bc4c89d53be89f915ad3e6eac597ed3");
+
     }
 }
