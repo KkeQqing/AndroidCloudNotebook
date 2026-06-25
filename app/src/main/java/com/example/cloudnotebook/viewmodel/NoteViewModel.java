@@ -28,6 +28,7 @@ public class NoteViewModel extends AndroidViewModel {
      * 2. 初始化数据仓库
      */
     public NoteViewModel(Application application) {
+
         super(application);
         // 获取本地保存的当前用户ID
         String userId = new SharedPrefsHelper(application).getUserId();
